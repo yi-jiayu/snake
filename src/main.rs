@@ -13,7 +13,7 @@ macro_rules! rect (
         Rect::new($x as i32, $y as i32, $w as u32, $h as u32))
 );
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum Direction {
     Up,
     Down,
@@ -148,7 +148,7 @@ fn main() {
     occupied.insert(tail);
     let mut state = State {
         status: Status::Alive,
-        bounds: (10, 0, 0, 10),
+        bounds: (20, 0, 0, 20),
         food: (1, 3),
         nutrition: 1.0,
         speed: 1.0,
@@ -174,6 +174,7 @@ fn main() {
     let mut t: u128 = 0;
     let mut current_time: u128 = 0;
     let mut accumulator: u128 = 0;
+    let mut dead = false;
 
     println!("{:?}", state);
 
@@ -191,25 +192,25 @@ fn main() {
                 Event::KeyDown {
                     scancode: Some(Scancode::W),
                     ..
-                } => {
+                } if state.direction != Direction::Up => {
                     state.direction = Direction::Down;
                 }
                 Event::KeyDown {
                     scancode: Some(Scancode::A),
                     ..
-                } => {
+                } if state.direction != Direction::Right => {
                     state.direction = Direction::Left;
                 }
                 Event::KeyDown {
                     scancode: Some(Scancode::S),
                     ..
-                } => {
+                } if state.direction != Direction::Down => {
                     state.direction = Direction::Up;
                 }
                 Event::KeyDown {
                     scancode: Some(Scancode::D),
                     ..
-                } => {
+                } if state.direction != Direction::Left => {
                     state.direction = Direction::Right;
                 }
                 _ => {}
@@ -224,7 +225,12 @@ fn main() {
 
         while accumulator >= DELTA_TIME {
             state.step_forward();
-            println!("{:?}", state);
+            if !dead {
+                println!("{:?}", state);
+            }
+            if let Status::Dead = state.status {
+                dead = true;
+            }
             accumulator -= DELTA_TIME;
             t += DELTA_TIME;
         }
