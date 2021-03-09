@@ -1,12 +1,12 @@
-use rand::{thread_rng, Rng};
+use std::collections::{HashSet, LinkedList};
+use std::time::Instant;
+
+use rand::{Rng, thread_rng};
 use sdl2::event::Event;
 use sdl2::keyboard::{Keycode, Scancode};
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::WindowCanvas;
-use std::collections::{HashSet, LinkedList};
-use std::iter::Scan;
-use std::time::{Duration, Instant};
 
 macro_rules! rect (
     ($x:expr, $y:expr, $w:expr, $h:expr) => (
@@ -50,7 +50,7 @@ impl State {
         let delta = self.progress.floor();
         self.progress -= delta;
         let delta = delta as i32;
-        let (x, y) = self.snake.front().unwrap().clone();
+        let (x, y) = *self.snake.front().unwrap();
         let new_pos = match self.direction {
             Direction::Up => (x, y + delta),
             Direction::Down => (x, y - delta),
@@ -171,7 +171,6 @@ fn main() {
     let mut canvas = window.into_canvas().build().unwrap();
 
     let t_0 = Instant::now();
-    let mut t: u128 = 0;
     let mut current_time: u128 = 0;
     let mut accumulator: u128 = 0;
     let mut dead = false;
@@ -232,7 +231,6 @@ fn main() {
                 dead = true;
             }
             accumulator -= DELTA_TIME;
-            t += DELTA_TIME;
         }
 
         canvas.set_draw_color(Color::RGB(255, 255, 255));
