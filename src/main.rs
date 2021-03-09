@@ -14,8 +14,10 @@ struct State {
     status: Status,
     bounds: (usize, usize, usize, usize),
     food: (usize, usize),
-    speed: i32,
-    length: usize,
+    nutrition: f32,
+    speed: f32,
+    progress: f32,
+    length: f32,
     direction: Direction,
     snake: LinkedList<(usize, usize)>,
     occupied: HashSet<(usize, usize)>,
@@ -32,12 +34,16 @@ impl State {
         if let Status::Dead = self.status {
             return;
         }
+        self.progress += self.speed;
+        let delta = self.progress.floor();
+        self.progress -= delta;
+        let delta = delta as usize;
         let (x, y) = self.snake.front().unwrap().clone();
         let new_pos = match self.direction {
-            Direction::Up => (x, y + 1),
-            Direction::Down => (x, y - 1),
-            Direction::Left => (x - 1, y),
-            Direction::Right => (x + 1, y),
+            Direction::Up => (x, y + delta),
+            Direction::Down => (x, y - delta),
+            Direction::Left => (x - delta, y),
+            Direction::Right => (x + delta, y),
         };
         let (top, bottom, left, right) = self.bounds;
         let (x_p, y_p) = new_pos;
@@ -48,7 +54,7 @@ impl State {
         self.snake.push_front(new_pos);
         self.occupied.insert(new_pos);
         if new_pos == self.food {
-            self.length += 1;
+            self.length += self.nutrition;
             loop {
                 let new_y: usize = thread_rng().gen_range(bottom..top);
                 let new_x: usize = thread_rng().gen_range(left..right);
@@ -58,7 +64,7 @@ impl State {
                 };
             }
         }
-        if self.snake.len() > self.length {
+        if self.snake.len() as f32 > self.length {
             let tail = self.snake.pop_back().unwrap();
             self.occupied.remove(&tail);
         }
@@ -75,8 +81,10 @@ fn main() {
         status: Status::Alive,
         bounds: (10, 0, 0, 10),
         food: (1, 3),
-        speed: 1,
-        length: 1,
+        nutrition: 1.0,
+        speed: 1.0,
+        progress: 0.0,
+        length: 1.0,
         direction: Direction::Up,
         snake,
         occupied,
