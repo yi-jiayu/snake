@@ -74,9 +74,12 @@ impl State {
 fn main() {
     let mut snake: LinkedList<(usize, usize)> = LinkedList::new();
     let start = (1, 2);
-    snake.push_front(start);
+    let tail = (1, 1);
+    snake.push_back(start);
+    snake.push_back(tail);
     let mut occupied: HashSet<(usize, usize)> = HashSet::new();
     occupied.insert(start);
+    occupied.insert(tail);
     let mut state = State {
         status: Status::Alive,
         bounds: (10, 0, 0, 10),
@@ -84,7 +87,7 @@ fn main() {
         nutrition: 1.0,
         speed: 1.0,
         progress: 0.0,
-        length: 1.0,
+        length: snake.len() as f32,
         direction: Direction::Up,
         snake,
         occupied,
