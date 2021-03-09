@@ -24,14 +24,32 @@ enum Direction {
 #[derive(Debug)]
 struct State {
     status: Status,
+
+    /// Bounding box of the game area represented as a (top, bottom, left, right) tuple.
     bounds: (i32, i32, i32, i32),
+
+    /// Position of the current food pellet.
     food: (i32, i32),
+
+    /// How much the snake grows after consuming a single pellet of food.
     nutrition: f32,
+
+    /// How far the snake moves in a single game tick.
     speed: f32,
+
+    /// Non-integer leftover distance covered by the snake.
     progress: f32,
+
+    /// Actual length of the snake including non-integer part.
     length: f32,
+
+    /// Direction the snake is moving.
     direction: Direction,
+
+    /// Coordinates of the snake in order from head to tail.
     snake: LinkedList<(i32, i32)>,
+
+    /// Set of the coordinates occupied by the snake.
     occupied: HashSet<(i32, i32)>,
 }
 
@@ -48,6 +66,9 @@ impl State {
         }
         self.progress += self.speed;
         let delta = self.progress.floor();
+        if delta == 0.0 {
+            return;
+        }
         self.progress -= delta;
         let delta = delta as i32;
         let (x, y) = *self.snake.front().unwrap();
