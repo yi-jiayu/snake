@@ -13,7 +13,7 @@ macro_rules! rect (
         Rect::new($x as i32, $y as i32, $w as u32, $h as u32))
 );
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 enum Direction {
     Up,
     Down,
@@ -46,6 +46,9 @@ struct State {
     /// Direction the snake is moving.
     direction: Direction,
 
+    /// Direction the snake is about to turn to.
+    next_direction: Direction,
+
     /// Coordinates of the snake in order from head to tail.
     snake: LinkedList<(i32, i32)>,
 
@@ -72,6 +75,16 @@ impl State {
         self.progress -= delta;
         let delta = delta as i32;
         let (x, y) = *self.snake.front().unwrap();
+        self.direction = if (self.next_direction == Direction::Up
+            && self.direction != Direction::Down)
+            || (self.next_direction == Direction::Down && self.direction != Direction::Up)
+            || (self.next_direction == Direction::Left && self.direction != Direction::Right)
+            || (self.next_direction == Direction::Right && self.direction != Direction::Left)
+        {
+            self.next_direction
+        } else {
+            self.direction
+        };
         let new_pos = match self.direction {
             Direction::Up => (x, y + delta),
             Direction::Down => (x, y - delta),
@@ -214,6 +227,7 @@ fn main() {
         progress: 0.0,
         length: snake.len() as f32,
         direction: Direction::Up,
+        next_direction: Direction::Up,
         snake,
         occupied,
     };
@@ -250,26 +264,26 @@ fn main() {
                 Event::KeyDown {
                     scancode: Some(Scancode::W),
                     ..
-                } if state.direction != Direction::Up => {
-                    state.direction = Direction::Down;
+                } => {
+                    state.next_direction = Direction::Down;
                 }
                 Event::KeyDown {
                     scancode: Some(Scancode::A),
                     ..
-                } if state.direction != Direction::Right => {
-                    state.direction = Direction::Left;
+                } => {
+                    state.next_direction = Direction::Left;
                 }
                 Event::KeyDown {
                     scancode: Some(Scancode::S),
                     ..
-                } if state.direction != Direction::Down => {
-                    state.direction = Direction::Up;
+                } => {
+                    state.next_direction = Direction::Up;
                 }
                 Event::KeyDown {
                     scancode: Some(Scancode::D),
                     ..
-                } if state.direction != Direction::Left => {
-                    state.direction = Direction::Right;
+                } => {
+                    state.next_direction = Direction::Right;
                 }
                 _ => {}
             }
