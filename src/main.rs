@@ -1,7 +1,7 @@
 use std::collections::{HashSet, LinkedList};
 use std::time::Instant;
 
-use rand::{Rng, thread_rng};
+use rand::{thread_rng, Rng};
 use sdl2::event::Event;
 use sdl2::keyboard::{Keycode, Scancode};
 use sdl2::pixels::Color;
@@ -137,13 +137,51 @@ impl State {
             BLOCK_SIZE
         ));
 
-        for (x, y) in self.snake.iter() {
+        let mut prev_xy: Option<(i32, i32)> = None;
+        for xy in self.snake.iter() {
+            let (x, y) = *xy;
             canvas.fill_rect(rect!(
-                offset_x + BLOCK_SIZE + x * BLOCK_SIZE,
-                offset_y + BLOCK_SIZE + y * BLOCK_SIZE,
-                BLOCK_SIZE,
-                BLOCK_SIZE
+                offset_x + BLOCK_SIZE + x * BLOCK_SIZE + 1,
+                offset_y + BLOCK_SIZE + y * BLOCK_SIZE + 1,
+                BLOCK_SIZE - 2,
+                BLOCK_SIZE - 2
             ));
+            if let Some((xp, yp)) = prev_xy {
+                if xp + 1 == x {
+                    // RIGHT
+                    canvas.fill_rect(rect!(
+                        offset_x + BLOCK_SIZE + x * BLOCK_SIZE - 1,
+                        offset_y + BLOCK_SIZE + y * BLOCK_SIZE + 1,
+                        2,
+                        BLOCK_SIZE - 2
+                    ));
+                } else if xp - 1 == x {
+                    // LEFT
+                    canvas.fill_rect(rect!(
+                        offset_x + BLOCK_SIZE + x * BLOCK_SIZE + BLOCK_SIZE - 1,
+                        offset_y + BLOCK_SIZE + y * BLOCK_SIZE + 1,
+                        2,
+                        BLOCK_SIZE - 2
+                    ));
+                } else if yp - 1 == y {
+                    // DOWN
+                    canvas.fill_rect(rect!(
+                        offset_x + BLOCK_SIZE + x * BLOCK_SIZE + 1,
+                        offset_y + BLOCK_SIZE + y * BLOCK_SIZE + BLOCK_SIZE - 1,
+                        BLOCK_SIZE - 2,
+                        2
+                    ));
+                } else if yp + 1 == y {
+                    // UP
+                    canvas.fill_rect(rect!(
+                        offset_x + BLOCK_SIZE + x * BLOCK_SIZE + 1,
+                        offset_y + BLOCK_SIZE + y * BLOCK_SIZE - 1,
+                        BLOCK_SIZE - 2,
+                        2
+                    ));
+                };
+            }
+            prev_xy = Some((x, y));
         }
 
         let (x, y) = self.food;
